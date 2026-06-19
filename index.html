@@ -201,6 +201,35 @@
   }
   .demo-btn:active { opacity:.7; }
 
+  .login-badge {
+    background: var(--grad);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 4px 12px rgba(168,85,247,0.3);
+  }
+
+  .teacher-login-link {
+    text-align: right;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-top: 16px;
+    text-decoration: underline;
+    opacity: 0.6;
+    transition: opacity 0.2s, color 0.2s;
+  }
+  .teacher-login-link:hover, .teacher-login-link:active {
+    opacity: 1;
+    color: var(--purple);
+  }
+
   /* ══════════ MAIN ══════════ */
   #mainPage {
     padding-bottom: calc(var(--safe-bottom) + 100px);
@@ -309,6 +338,8 @@
   .wdots { display:flex; gap:3px; }
   .wd { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.12); }
   .wd.on { background:var(--green); box-shadow:0 0 5px rgba(74,222,128,.5); }
+  .wd.future { background:rgba(255,255,255,.03); border:1px dashed rgba(255,255,255,.15); }
+  input[type="date"] { color-scheme: dark; }
 
   /* 피드 */
   .feed-list { display:flex; flex-direction:column; gap:12px; }
@@ -490,21 +521,24 @@
 <!-- ══ 로그인 ══ -->
 <div class="page active" id="loginPage">
   <div class="login-hero">
+    <div class="login-badge" id="loginBadge" style="display:none;">선생님 로그인 모드 🔑</div>
     <span class="logo-emoji">📓</span>
     <div class="logo-title">엔조이수학<br>플래너 습관 챌린지</div>
     <div class="logo-sub">매일 인증하고 습관을 만들어요 ✨</div>
   </div>
   <div class="login-form">
     <div class="input-group">
-      <label class="input-label">이름</label>
+      <label class="input-label" id="nameLabel">이름</label>
       <input class="input-field" id="nameInput" type="text" placeholder="홍길동" autocomplete="off" autocorrect="off">
     </div>
     <div class="input-group">
       <label class="input-label">핸드폰 번호</label>
       <input class="input-field" id="phoneInput" type="tel" placeholder="010-0000-0000" maxlength="13" inputmode="numeric">
     </div>
-    <button class="btn-primary" onclick="handleLogin()">시작하기 🚀</button>
+    <button class="btn-primary" id="loginSubmitBtn" onclick="handleLogin()">시작하기 🚀</button>
     <button class="demo-btn" onclick="demoLogin()">👀 데모로 체험하기</button>
+    <div class="teacher-login-link" id="teacherLoginLink" onclick="toggleTeacherMode(true)">🔑 선생님 로그인</div>
+    <div class="teacher-login-link" id="studentLoginLink" style="display:none;" onclick="toggleTeacherMode(false)">👤 학생으로 로그인</div>
   </div>
 </div>
 
@@ -518,6 +552,7 @@
       <div class="greeting-sub" id="todayStatus">오늘 아직 인증 전이에요</div>
     </div>
     <div class="top-right">
+      <div class="icon-btn" id="adminSettingBtn" style="display:none; cursor:pointer;" onclick="openAdminSettings()">⚙️</div>
       <div class="icon-btn" onclick="toggleNotif()">🔔</div>
     </div>
   </div>
@@ -572,6 +607,16 @@
       <div class="team-body" id="teamBody"></div>
     </div>
 
+    <!-- 누적 기록 -->
+    <div class="sec">📅 주차별 누적 리포트</div>
+    <div class="team-card">
+      <div class="team-header" onclick="toggleCumulative()">
+        <div class="team-title">📈 주차별 누적 기록</div>
+        <div class="team-chevron" id="cumulativeChevron">▼</div>
+      </div>
+      <div class="team-body" id="cumulativeBody"></div>
+    </div>
+
     <!-- 피드 -->
     <div class="sec">📷 인증 피드</div>
     <div class="feed-list" id="feedList">
@@ -610,6 +655,26 @@
   </div>
 </div>
 
+<!-- ══ 관리자 설정 모달 ══ -->
+<div class="overlay" id="adminOverlay">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-title">⚙️ 챌린지 기간 설정 (관리자)</div>
+    <div style="padding: 10px 0 20px;">
+      <div class="input-group">
+        <label class="input-label">플래너 시작일</label>
+        <input type="date" id="adminStartDateInput" class="input-field">
+      </div>
+      <div class="input-group" style="margin-top: 14px;">
+        <label class="input-label">플래너 종료일</label>
+        <input type="date" id="adminEndDateInput" class="input-field">
+      </div>
+    </div>
+    <button class="btn-submit" onclick="saveAdminSettings()">설정 저장하기 💾</button>
+    <button class="btn-cancel" onclick="closeOverlay('adminOverlay')">취소</button>
+  </div>
+</div>
+
 <!-- ══ 칭찬 팝업 ══ -->
 <div class="praise-overlay" id="praiseOverlay">
   <div class="confetti-wrap" id="confettiWrap"></div>
@@ -627,7 +692,18 @@
 <script>
 // ══ STATE ══
 const KEY = 'plannerV3';
-let S = { users:[], certs:[], user:null, notif:false };
+let S = { users:[], certs:[], user:null, notif:false, settings: { startDate:'', endDate:'' } };
+let isTeacherMode = false;
+
+function toggleTeacherMode(active) {
+  isTeacherMode = active;
+  document.getElementById('loginBadge').style.display = active ? 'inline-flex' : 'none';
+  document.getElementById('teacherLoginLink').style.display = active ? 'none' : 'block';
+  document.getElementById('studentLoginLink').style.display = active ? 'block' : 'none';
+  document.getElementById('loginSubmitBtn').textContent = active ? '선생님으로 시작하기 🚀' : '시작하기 🚀';
+  document.getElementById('nameLabel').textContent = active ? '선생님 이름' : '이름';
+  document.getElementById('nameInput').placeholder = active ? '김선생님' : '홍길동';
+}
 
 const PRAISES = [
   {e:'🎉', t:'완벽해요!', m:'오늘도 플래너를 작성했군요.\n꾸준함이 최고예요!'},
@@ -643,7 +719,7 @@ const COLORS = ['#a855f7','#ec4899','#3b82f6','#22d3ee','#f59e0b','#10b981','#ef
 const DEMO = [{name:'김선생님',phone:'010-0000-0001'},{name:'이지유',phone:'010-0000-0002'},
   {name:'박서준',phone:'010-0000-0003'},{name:'최아린',phone:'010-0000-0004'},{name:'정민준',phone:'010-0000-0005'}];
 
-function load() { try { const d=localStorage.getItem(KEY); if(d) S=JSON.parse(d); } catch(e){} }
+function load() { try { const d=localStorage.getItem(KEY); if(d) { S=JSON.parse(d); if(!S.settings) S.settings = { startDate:'', endDate:'' }; } } catch(e){} }
 function save() { try { localStorage.setItem(KEY,JSON.stringify(S)); } catch(e){} }
 
 // ══ 날짜 ══
@@ -691,7 +767,13 @@ function handleLogin(){
   if(!name){toast('이름을 입력해주세요 😊','⚠️');return;}
   if(phone.length<12){toast('핸드폰 번호를 확인해주세요','⚠️');return;}
   let u=S.users.find(u=>u.name===name&&u.phone===phone);
-  if(!u){ u={id:Date.now(),name,phone,ci:S.users.length%COLORS.length}; S.users.push(u); }
+  if(!u){ 
+    u={id:Date.now(),name,phone,ci:S.users.length%COLORS.length}; 
+    if(isTeacherMode) u.isTeacher = true;
+    S.users.push(u); 
+  } else {
+    if(isTeacherMode) u.isTeacher = true;
+  }
   S.user=u; save(); enterMain();
 }
 
@@ -708,7 +790,20 @@ function demoLogin(){
   S.user=S.users[0]; save(); enterMain();
 }
 
-function logout(){ S.user=null; save(); showPage('loginPage'); }
+function logout(){
+  S.user=null;
+  save();
+  toggleTeacherMode(false);
+  const cBody = document.getElementById('cumulativeBody');
+  if(cBody) cBody.classList.remove('open');
+  const cChev = document.getElementById('cumulativeChevron');
+  if(cChev) cChev.classList.remove('open');
+  const tBody = document.getElementById('teamBody');
+  if(tBody) tBody.classList.remove('open');
+  const tChev = document.getElementById('teamChevron');
+  if(tChev) tChev.classList.remove('open');
+  showPage('loginPage');
+}
 
 // ══ 메인 ══
 function enterMain(){ showPage('mainPage'); render(); reqNotif(); startSched(); }
@@ -761,6 +856,18 @@ function render(){
     document.getElementById('teamRate').textContent=tr+'%';
     document.getElementById('teamRateSub').textContent='팀 전체 달성률';
     setTimeout(()=>document.getElementById('teamBar').style.width=tr+'%',150);
+  }
+
+  // 관리자 버튼 노출 여부
+  const adminBtn = document.getElementById('adminSettingBtn');
+  if (adminBtn) {
+    adminBtn.style.display = isAdmin(u) ? 'flex' : 'none';
+  }
+
+  // 누적 기록 리프레시 (열려있는 경우)
+  const cumBody = document.getElementById('cumulativeBody');
+  if (cumBody && cumBody.classList.contains('open')) {
+    renderCumulativeBody();
   }
 
   renderChips();
@@ -830,6 +937,146 @@ function renderFeed(){
       <div class="fi-likes">💜 ${Math.floor(Math.random()*8)+1}명이 응원해요</div>`;
     feed.appendChild(el);
   });
+}
+
+// ══ 관리자 & 누적 리포트 함수 ══
+function isAdmin(user) {
+  if (!user) return false;
+  return user.name.includes('선생님') || user.name.includes('관리자') || user.phone === '010-0000-0001';
+}
+
+function parseLocalDate(str) {
+  const parts = str.split('-');
+  if (parts.length !== 3) return new Date(NaN);
+  return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+}
+
+function getPlannerSettings() {
+  if (!S.settings) S.settings = { startDate: '', endDate: '' };
+  let start = S.settings.startDate;
+  let end = S.settings.endDate;
+  if (!start || !end) {
+    const dStart = new Date();
+    dStart.setDate(dStart.getDate() - 14);
+    const dEnd = new Date();
+    dEnd.setDate(dEnd.getDate() + 14);
+    start = `${dStart.getFullYear()}-${p(dStart.getMonth()+1)}-${p(dStart.getDate())}`;
+    end = `${dEnd.getFullYear()}-${p(dEnd.getMonth()+1)}-${p(dEnd.getDate())}`;
+  }
+  return { startDate: start, endDate: end };
+}
+
+function openAdminSettings() {
+  const { startDate, endDate } = getPlannerSettings();
+  document.getElementById('adminStartDateInput').value = S.settings.startDate || '';
+  document.getElementById('adminEndDateInput').value = S.settings.endDate || '';
+  openOverlay('adminOverlay');
+}
+
+function saveAdminSettings() {
+  const start = document.getElementById('adminStartDateInput').value;
+  const end = document.getElementById('adminEndDateInput').value;
+  if (!start || !end) {
+    toast('시작일과 종료일을 모두 선택해주세요.', '⚠️');
+    return;
+  }
+  if (new Date(start) > new Date(end)) {
+    toast('시작일은 종료일보다 빨라야 합니다.', '⚠️');
+    return;
+  }
+  S.settings = { startDate: start, endDate: end };
+  save();
+  toast('설정이 저장되었습니다! 💾', '✨');
+  closeOverlay('adminOverlay');
+  render();
+}
+
+function getWeeks(startStr, endStr) {
+  if (!startStr || !endStr) return [];
+  const start = parseLocalDate(startStr);
+  const end = parseLocalDate(endStr);
+  if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) return [];
+
+  const weeks = [];
+  let currentStart = new Date(start);
+  let weekIndex = 1;
+
+  while (currentStart <= end) {
+    let currentEnd = new Date(currentStart);
+    currentEnd.setDate(currentEnd.getDate() + 6);
+    if (currentEnd > end) {
+      currentEnd = new Date(end);
+    }
+    const days = [];
+    let d = new Date(currentStart);
+    while (d <= currentEnd) {
+      days.push(`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`);
+      d.setDate(d.getDate() + 1);
+    }
+    weeks.push({
+      index: weekIndex++,
+      startStr: `${currentStart.getFullYear()}-${p(currentStart.getMonth()+1)}-${p(currentStart.getDate())}`,
+      endStr: `${currentEnd.getFullYear()}-${p(currentEnd.getMonth()+1)}-${p(currentEnd.getDate())}`,
+      label: `${currentStart.getMonth()+1}.${currentStart.getDate()} ~ ${currentEnd.getMonth()+1}.${currentEnd.getDate()}`,
+      days: days
+    });
+    currentStart = new Date(currentEnd);
+    currentStart.setDate(currentStart.getDate() + 1);
+  }
+  return weeks;
+}
+
+function toggleCumulative(){
+  const body=document.getElementById('cumulativeBody');
+  const chev=document.getElementById('cumulativeChevron');
+  const open=body.classList.contains('open');
+  if(!open) renderCumulativeBody();
+  body.classList.toggle('open',!open);
+  chev.classList.toggle('open',!open);
+}
+
+function renderCumulativeBody() {
+  const { startDate, endDate } = getPlannerSettings();
+  const weeks = getWeeks(startDate, endDate);
+  const u = S.user;
+  if (!weeks.length) {
+    document.getElementById('cumulativeBody').innerHTML = `
+      <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 14px;">
+        설정된 기간이 없거나 유효하지 않습니다.
+      </div>`;
+    return;
+  }
+  const today = todayKey();
+  const html = weeks.map(w => {
+    const userCerts = w.days.filter(d => hasCertDay(u.id, d)).length;
+    const userRate = Math.round((userCerts / w.days.length) * 100);
+    let teamCertsSum = 0;
+    S.users.forEach(tu => {
+      teamCertsSum += w.days.filter(d => hasCertDay(tu.id, d)).length;
+    });
+    const teamTotalPossible = S.users.length * w.days.length;
+    const teamRate = teamTotalPossible > 0 ? Math.round((teamCertsSum / teamTotalPossible) * 100) : 0;
+    const dotsHtml = w.days.map(d => {
+      const isCertified = hasCertDay(u.id, d);
+      const isFuture = d > today;
+      let dotClass = 'wd';
+      if (isCertified) dotClass += ' on';
+      if (isFuture) dotClass += ' future';
+      return `<div class="${dotClass}" title="${d}"></div>`;
+    }).join('');
+    return `
+      <div class="tm-row">
+        <div class="tm-left" style="flex-direction: column; align-items: flex-start; gap: 2px;">
+          <div class="tm-name">${w.index}주차 (${w.label})</div>
+          <div class="tm-rate" style="font-size:12px; color:var(--text-muted);">
+            달성: ${userCerts}/${w.days.length}일 (${userRate}%) · 팀 평균: ${teamRate}%
+          </div>
+        </div>
+        <div class="wdots">${dotsHtml}</div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('cumulativeBody').innerHTML = html;
 }
 
 // ══ 업로드 ══
