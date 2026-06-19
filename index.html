@@ -1001,19 +1001,25 @@ async function deleteMember(e, uid, name) {
       return;
     }
     
-    // Firestore에서 유저 및 인증 기록 삭제
-    await window.fsDeleteDoc(window.fsDoc(window.db, 'users', targetUser.phone));
+    // Firestore에서 유저를 deleted: true로 업데이트 (소프트 삭제)
+    await window.fsSetDoc(window.fsDoc(window.db, 'users', targetUser.phone), {
+      ...targetUser,
+      deleted: true
+    });
     
     const userCerts = S.certs.filter(c => String(c.uid) === String(uid));
     const certDeletes = userCerts.map(c => 
-      window.fsDeleteDoc(window.fsDoc(window.db, 'certs', `${c.uid}_${c.ts}`))
+      window.fsSetDoc(window.fsDoc(window.db, 'certs', `${c.uid}_${c.ts}`), {
+        ...c,
+        deleted: true
+      })
     );
     await Promise.all(certDeletes);
 
     toast(`${name} 님이 삭제되었습니다.`, '🗑️');
   } catch (err) {
     console.error('회원 삭제 오류:', err);
-    toast('회원 삭제 중 오류가 발생했습니다.', '⚠️');
+    toast('회원 삭제 중 오류가 발생했습니다: ' + err.message, '⚠️');
   }
 }
 
@@ -1361,7 +1367,10 @@ function startFirestoreSync() {
   // 1. Sync users
   window.fsOnSnapshot(window.fsCollection(window.db, 'users'), (snapshot) => {
     const users = [];
-    snapshot.forEach(doc => users.push(doc.data()));
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (!data.deleted) users.push(data);
+    });
     S.users = users;
     
     if (S.user) {
@@ -1377,7 +1386,10 @@ function startFirestoreSync() {
   // 2. Sync certs
   window.fsOnSnapshot(window.fsCollection(window.db, 'certs'), (snapshot) => {
     const certs = [];
-    snapshot.forEach(doc => certs.push(doc.data()));
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (!data.deleted) certs.push(data);
+    });
     S.certs = certs;
     render();
   });
