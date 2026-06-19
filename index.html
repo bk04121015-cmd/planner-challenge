@@ -37,6 +37,50 @@
   window.stGetDownloadURL = getDownloadURL;
   window.firebaseReady = true;
   console.log('Firebase 연결 완료 ✅');
+
+  // FCM 서비스워커 등록 + 토큰 발급
+  const VAPID_KEY = 'BM-2F_JJxDUmOILg1IvtTWPcWaqZJgKYYkzqucFO8Foor-l9geeJR_xiCX8c0qQ_8ZkUPhTQhM0S2Qbq84kP53U';
+
+  async function initFCM() {
+    if (!('serviceWorker' in navigator)) return;
+    try {
+      const { getMessaging, getToken, onMessage } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js');
+      const messaging = getMessaging(app);
+
+      // 서비스워커 등록
+      const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      console.log('서비스워커 등록 완료 ✅');
+
+      // FCM 토큰 발급
+      const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+      if (token) {
+        window.fcmToken = token;
+        console.log('FCM 토큰 발급 완료 ✅');
+        // 토큰을 Firestore에 저장 (로그인 후 호출됨)
+        window.saveFcmToken = async (userId) => {
+          try {
+            await fsAddDoc(fsCollection(window.db, 'fcmTokens'), {
+              userId, token, updatedAt: new Date().toISOString()
+            });
+          } catch(e) {}
+        };
+      }
+
+      // 포그라운드 메시지 처리 (앱 열려있을 때)
+      onMessage(messaging, (payload) => {
+        const { title, body } = payload.notification || {};
+        if (title) {
+          if (window.showToast) window.showToast(body || title, '🔔');
+          new Notification(title, { body, tag: 'planner-reminder' });
+        }
+      });
+    } catch(e) {
+      console.log('FCM 초기화 실패:', e);
+    }
+  }
+
+  // 페이지 로드 후 FCM 초기화
+  window.addEventListener('load', () => setTimeout(initFCM, 2000));
 </script>
 <style>
   :root {
