@@ -942,7 +942,9 @@ function renderFeed(){
 // ══ 관리자 & 누적 리포트 함수 ══
 function isAdmin(user) {
   if (!user) return false;
-  return user.name.includes('선생님') || user.name.includes('관리자') || user.phone === '010-0000-0001';
+  const name = user.name || '';
+  const phone = user.phone || '';
+  return user.isTeacher === true || name.includes('선생님') || name.includes('관리자') || phone === '010-0000-0001';
 }
 
 function parseLocalDate(str) {
