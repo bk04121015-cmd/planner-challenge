@@ -8,6 +8,36 @@
 <meta name="apple-mobile-web-app-title" content="플래너챌린지">
 <meta name="theme-color" content="#0d0d1a">
 <title>엔조이수학 플래너 습관 챌린지</title>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBesowYLPFM3pCK--rPs4nbDphroPKiNoc",
+    authDomain: "enjoymath-planer.firebaseapp.com",
+    projectId: "enjoymath-planer",
+    storageBucket: "enjoymath-planer.firebasestorage.app",
+    messagingSenderId: "929239886547",
+    appId: "1:929239886547:web:2d6f2b4988dd4913834226"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  window.db = getFirestore(app);
+  window.storage = getStorage(app);
+  window.fsCollection = collection;
+  window.fsAddDoc = addDoc;
+  window.fsGetDocs = getDocs;
+  window.fsQuery = query;
+  window.fsOrderBy = orderBy;
+  window.fsOnSnapshot = onSnapshot;
+  window.stRef = ref;
+  window.stUploadString = uploadString;
+  window.stGetDownloadURL = getDownloadURL;
+  window.firebaseReady = true;
+  console.log('Firebase 연결 완료 ✅');
+</script>
 <style>
   :root {
     --bg: #0d0d1a;
