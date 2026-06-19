@@ -11,7 +11,7 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  import { getFirestore, collection, doc, setDoc, deleteDoc, addDoc, getDocs, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
   import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
   const firebaseConfig = {
@@ -27,6 +27,9 @@
   window.db = getFirestore(app);
   window.storage = getStorage(app);
   window.fsCollection = collection;
+  window.fsDoc = doc;
+  window.fsSetDoc = setDoc;
+  window.fsDeleteDoc = deleteDoc;
   window.fsAddDoc = addDoc;
   window.fsGetDocs = getDocs;
   window.fsQuery = query;
@@ -340,6 +343,23 @@
   .wd.on { background:var(--green); box-shadow:0 0 5px rgba(74,222,128,.5); }
   .wd.future { background:rgba(255,255,255,.03); border:1px dashed rgba(255,255,255,.15); }
   input[type="date"] { color-scheme: dark; }
+
+  .del-member-btn {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+  .del-member-btn:active {
+    background: rgba(239, 68, 68, 0.15);
+  }
 
   /* 피드 */
   .feed-list { display:flex; flex-direction:column; gap:12px; }
@@ -761,33 +781,79 @@ document.getElementById('phoneInput').addEventListener('input',function(){
   else this.value=v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7,11);
 });
 
-function handleLogin(){
+async function handleLogin(){
   const name=document.getElementById('nameInput').value.trim();
   const phone=document.getElementById('phoneInput').value.trim();
   if(!name){toast('이름을 입력해주세요 😊','⚠️');return;}
   if(phone.length<12){toast('핸드폰 번호를 확인해주세요','⚠️');return;}
-  let u=S.users.find(u=>u.name===name&&u.phone===phone);
-  if(!u){ 
-    u={id:Date.now(),name,phone,ci:S.users.length%COLORS.length}; 
-    if(isTeacherMode) u.isTeacher = true;
-    S.users.push(u); 
-  } else {
-    if(isTeacherMode) u.isTeacher = true;
+  
+  const btn = document.getElementById('loginSubmitBtn');
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = '로그인 중... ⏳';
+
+  try {
+    let u = S.users.find(u => u.name === name && u.phone === phone);
+    if (!u) {
+      u = { id: Date.now(), name, phone, ci: S.users.length % COLORS.length };
+      if (isTeacherMode) u.isTeacher = true;
+      await window.fsSetDoc(window.fsDoc(window.db, 'users', phone), u);
+    } else {
+      if (isTeacherMode && !u.isTeacher) {
+        u.isTeacher = true;
+        await window.fsSetDoc(window.fsDoc(window.db, 'users', phone), u);
+      }
+    }
+    S.user = u;
+    save();
+    enterMain();
+  } catch (err) {
+    console.error('로그인 오류:', err);
+    toast('로그인 중 오류가 발생했습니다. 파이어베이스 권한을 확인해주세요.', '⚠️');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
   }
-  S.user=u; save(); enterMain();
 }
 
-function demoLogin(){
-  if(!S.users.length){
-    DEMO.forEach((m,i)=>S.users.push({id:i+1,name:m.name,phone:m.phone,ci:i}));
-    const days=last7();
-    S.users.forEach(u=>{
-      days.slice(0,Math.floor(Math.random()*5)+1).forEach(d=>{
-        S.certs.push({id:Date.now()+Math.random(),uid:u.id,date:d,ts:Date.now()-Math.random()*86400000*6,photo:''});
+async function demoLogin(){
+  const btn = document.querySelector('.demo-btn');
+  btn.disabled = true;
+  btn.textContent = '데모 초기화 중... ⏳';
+
+  try {
+    if(!S.users.length || !S.users.some(u => u.name === '김선생님')){
+      const days=last7();
+      const batchPromises = [];
+      
+      DEMO.forEach((m,i)=>{
+        const u = { id: i+1, name: m.name, phone: m.phone, ci: i };
+        if (m.name === '김선생님') u.isTeacher = true;
+        batchPromises.push(window.fsSetDoc(window.fsDoc(window.db, 'users', m.phone), u));
+        
+        days.slice(0, Math.floor(Math.random()*5)+1).forEach(d => {
+          const ts = Date.now() - Math.random()*86400000*6;
+          const certId = `${u.id}_${Math.floor(ts)}`;
+          const cert = { id: Math.floor(ts), uid: u.id, date: d, ts: Math.floor(ts), photo: '' };
+          batchPromises.push(window.fsSetDoc(window.fsDoc(window.db, 'certs', certId), cert));
+        });
       });
-    });
+      
+      await Promise.all(batchPromises);
+    }
+    
+    // Log in as 김선생님 (first demo user)
+    const teacher = S.users.find(u => u.name === '김선생님') || { id: 1, name: '김선생님', phone: '010-0000-0001', ci: 0, isTeacher: true };
+    S.user = teacher;
+    save();
+    enterMain();
+  } catch (err) {
+    console.error('데모 로그인 오류:', err);
+    toast('데모 초기화 오류가 발생했습니다.', '⚠️');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '👀 데모로 체험하기';
   }
-  S.user=S.users[0]; save(); enterMain();
 }
 
 function logout(){
@@ -893,21 +959,58 @@ function toggleTeam(){
 
 function renderTeamBody(){
   const days=last7();
+  const currentUser=S.user;
+  const isTeacher = isAdmin(currentUser);
+
   document.getElementById('teamBody').innerHTML=S.users.map((u,i)=>{
     const wd=days.map(d=>hasCertDay(u.id,d));
     const rate=Math.round(wd.filter(Boolean).length/7*100);
     const color=COLORS[u.ci!=null?u.ci:i%COLORS.length];
+    
+    // 선생님이고 자기 자신이 아닐 때만 삭제 버튼을 보여줌
+    const showDel = isTeacher && u.id !== currentUser.id;
+    const delBtn = showDel ? `<button class="del-member-btn" onclick="deleteMember(event, ${u.id}, '${u.name}')">❌</button>` : '';
+
     return `<div class="tm-row">
       <div class="tm-left">
         <div class="av" style="background:${color}">${u.name.slice(-1)}</div>
         <div>
-          <div class="tm-name">${u.name}</div>
+          <div class="tm-name" style="display:flex; align-items:center; gap:5px;">
+            ${u.name} ${isAdmin(u) ? '<span style="font-size:10px; background:var(--grad); padding:2px 6px; border-radius:10px; font-weight:700;">선생님</span>' : ''}
+          </div>
           <div class="tm-rate">달성률 ${rate}%</div>
         </div>
       </div>
-      <div class="wdots">${wd.map(d=>`<div class="wd ${d?'on':''}"></div>`).join('')}</div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="wdots">${wd.map(d=>`<div class="wd ${d?'on':''}"></div>`).join('')}</div>
+        ${delBtn}
+      </div>
     </div>`;
   }).join('');
+}
+
+async function deleteMember(e, uid, name) {
+  if (e) e.stopPropagation();
+  if (!confirm(`'${name}' 님을 팀에서 정말 삭제하시겠습니까?\n삭제 시 해당 회원의 모든 인증 기록도 함께 삭제됩니다.`)) return;
+
+  try {
+    const targetUser = S.users.find(u => u.id === uid);
+    if (!targetUser) return;
+    
+    // Firestore에서 유저 및 인증 기록 삭제
+    await window.fsDeleteDoc(window.fsDoc(window.db, 'users', targetUser.phone));
+    
+    const userCerts = S.certs.filter(c => c.uid === uid);
+    const certDeletes = userCerts.map(c => 
+      window.fsDeleteDoc(window.fsDoc(window.db, 'certs', `${c.uid}_${c.ts}`))
+    );
+    await Promise.all(certDeletes);
+
+    toast(`${name} 님이 삭제되었습니다.`, '🗑️');
+  } catch (err) {
+    console.error('회원 삭제 오류:', err);
+    toast('회원 삭제 중 오류가 발생했습니다.', '⚠️');
+  }
 }
 
 function renderFeed(){
@@ -975,7 +1078,7 @@ function openAdminSettings() {
   openOverlay('adminOverlay');
 }
 
-function saveAdminSettings() {
+async function saveAdminSettings() {
   const start = document.getElementById('adminStartDateInput').value;
   const end = document.getElementById('adminEndDateInput').value;
   if (!start || !end) {
@@ -986,11 +1089,15 @@ function saveAdminSettings() {
     toast('시작일은 종료일보다 빨라야 합니다.', '⚠️');
     return;
   }
-  S.settings = { startDate: start, endDate: end };
-  save();
-  toast('설정이 저장되었습니다! 💾', '✨');
-  closeOverlay('adminOverlay');
-  render();
+  
+  try {
+    await window.fsSetDoc(window.fsDoc(window.db, 'settings', 'global'), { startDate: start, endDate: end });
+    toast('설정이 저장되었습니다! 💾', '✨');
+    closeOverlay('adminOverlay');
+  } catch (err) {
+    console.error('설정 저장 오류:', err);
+    toast('설정 저장 중 오류가 발생했습니다.', '⚠️');
+  }
 }
 
 function getWeeks(startStr, endStr) {
@@ -1101,19 +1208,45 @@ function previewFile(e){
   };
   r.readAsDataURL(f);
 }
-function submitCertify(){
+async function submitCertify(){
   const u=S.user;
-  const cert={id:Date.now(),uid:u.id,date:todayKey(),ts:Date.now(),photo:''};
-  if(selFile){
-    const r=new FileReader();
-    r.onload=ev=>{cert.photo=ev.target.result;finish(cert);};
-    r.readAsDataURL(selFile);
-  } else { finish(cert); }
-}
-function finish(cert){
-  S.certs.push(cert); save();
-  closeOverlay('uploadOverlay');
-  setTimeout(()=>{render();showPraise();},300);
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = '업로드 중... ⏳';
+
+  const ts = Date.now();
+  const certId = `${u.id}_${ts}`;
+  const cert={id:ts,uid:u.id,date:todayKey(),ts:ts,photo:''};
+
+  try {
+    if(selFile){
+      // 1. Upload to Storage
+      const storageRef = window.stRef(window.storage, `certs/${certId}.jpg`);
+      
+      const base64Data = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = ev => resolve(ev.target.result);
+        r.onerror = err => reject(err);
+        r.readAsDataURL(selFile);
+      });
+
+      await window.stUploadString(storageRef, base64Data, 'data_url');
+      const downloadUrl = await window.stGetDownloadURL(storageRef);
+      cert.photo = downloadUrl;
+    }
+
+    // 2. Save to Firestore
+    await window.fsSetDoc(window.fsDoc(window.db, 'certs', certId), cert);
+
+    closeOverlay('uploadOverlay');
+    setTimeout(()=>{render();showPraise();},300);
+  } catch (e) {
+    toast('인증 제출 중 오류가 발생했습니다.', '⚠️');
+    console.error(e);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '인증 완료! ✨';
+  }
 }
 
 // ══ 칭찬 팝업 ══
@@ -1214,9 +1347,52 @@ function toast(msg,icon='✅'){
   tt=setTimeout(()=>el.classList.remove('show'),3000);
 }
 
+// ══ FIRESTORE SYNC ══
+function startFirestoreSync() {
+  if (!window.firebaseReady) {
+    setTimeout(startFirestoreSync, 200);
+    return;
+  }
+  
+  // 1. Sync users
+  window.fsOnSnapshot(window.fsCollection(window.db, 'users'), (snapshot) => {
+    const users = [];
+    snapshot.forEach(doc => users.push(doc.data()));
+    S.users = users;
+    
+    if (S.user) {
+      const found = S.users.find(u => u.name === S.user.name && u.phone === S.user.phone);
+      if (found) {
+        S.user = found;
+        save();
+      }
+    }
+    render();
+  });
+
+  // 2. Sync certs
+  window.fsOnSnapshot(window.fsCollection(window.db, 'certs'), (snapshot) => {
+    const certs = [];
+    snapshot.forEach(doc => certs.push(doc.data()));
+    S.certs = certs;
+    render();
+  });
+
+  // 3. Sync settings
+  window.fsOnSnapshot(window.fsDoc(window.db, 'settings', 'global'), (docSnap) => {
+    if (docSnap.exists()) {
+      S.settings = docSnap.data();
+    } else {
+      S.settings = { startDate: '', endDate: '' };
+    }
+    render();
+  });
+}
+
 // ══ INIT ══
 load();
 if(S.user) enterMain();
+startFirestoreSync();
 </script>
 </body>
 </html>
