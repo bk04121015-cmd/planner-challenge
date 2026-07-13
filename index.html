@@ -235,7 +235,7 @@
 
   /* ══════════ MAIN ══════════ */
   #mainPage {
-    padding-bottom: calc(var(--safe-bottom) + 100px);
+    padding-bottom: calc(var(--safe-bottom) + 160px);
   }
 
   /* 상단 헤더 */
@@ -395,7 +395,7 @@
   /* ══ 고정 하단 인증 버튼 ══ */
   .fab-wrap {
     position:fixed; left:0; right:0;
-    bottom: calc(var(--safe-bottom) + 16px);
+    bottom: calc(var(--safe-bottom) + 76px);
     padding:0 16px; z-index:20;
     pointer-events:none;
   }
@@ -534,6 +534,213 @@
 
   /* 스크롤바 */
   ::-webkit-scrollbar { width:0; }
+
+  /* ══════════ BOTTOM TAB BAR ══════════ */
+  .tab-bar {
+    position:fixed; bottom:0; left:0; right:0;
+    display:none;
+    background:rgba(13,13,26,0.95);
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border-top:1px solid rgba(255,255,255,0.08);
+    padding:8px 0 calc(var(--safe-bottom) + 8px);
+    z-index:50;
+  }
+  .tab-bar.visible { display:flex; }
+  .tab-item {
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; gap:4px; padding:6px 0;
+    cursor:pointer; color:var(--text-muted);
+    font-size:11px; font-weight:600;
+    transition:color .2s; -webkit-tap-highlight-color:transparent;
+    background:none; border:none;
+  }
+  .tab-item .tab-icon { font-size:22px; transition:transform .2s; }
+  .tab-item.active { color:var(--purple); }
+  .tab-item.active .tab-icon { transform:scale(1.15); }
+
+  /* ══════════ SPEED PAGE ══════════ */
+  #speedPage { padding-bottom:calc(var(--safe-bottom) + 80px); }
+
+  .speed-tabs { display:flex; gap:4px; padding:0 16px; margin-bottom:16px; }
+  .speed-tab {
+    flex:1; padding:12px 8px;
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:12px; color:var(--text-muted);
+    font-size:13px; font-weight:700; cursor:pointer;
+    text-align:center; transition:all .25s; -webkit-appearance:none;
+  }
+  .speed-tab.active {
+    background:var(--grad); color:#fff; border-color:transparent;
+    box-shadow:0 4px 16px rgba(168,85,247,.35);
+  }
+  .speed-content { display:none; padding:0 16px; }
+  .speed-content.active { display:block; }
+
+  /* Timer */
+  .timer-wrap { display:flex; flex-direction:column; align-items:center; padding:20px 0; }
+  .timer-circle {
+    width:200px; height:200px; border-radius:50%;
+    background:rgba(255,255,255,0.04);
+    border:3px solid var(--card-border);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    transition:border-color .3s, box-shadow .3s;
+  }
+  .timer-circle.running {
+    border-color:var(--purple);
+    box-shadow:0 0 30px rgba(168,85,247,.25), 0 0 60px rgba(168,85,247,.1);
+    animation:pulse-glow 2s ease-in-out infinite;
+  }
+  @keyframes pulse-glow {
+    0%,100%{box-shadow:0 0 30px rgba(168,85,247,.25), 0 0 60px rgba(168,85,247,.1);}
+    50%{box-shadow:0 0 40px rgba(168,85,247,.35), 0 0 80px rgba(168,85,247,.15);}
+  }
+  .timer-circle.paused {
+    border-color:var(--yellow);
+    box-shadow:0 0 30px rgba(251,191,36,.2);
+  }
+  .timer-time {
+    font-size:42px; font-weight:900;
+    font-variant-numeric:tabular-nums; letter-spacing:-1px;
+  }
+  .timer-label { font-size:12px; color:var(--text-muted); margin-top:4px; }
+  .timer-controls { display:flex; gap:12px; margin-top:20px; }
+  .timer-btn {
+    padding:14px 28px; border-radius:14px;
+    font-size:15px; font-weight:700; cursor:pointer;
+    border:none; transition:transform .15s, opacity .15s;
+    -webkit-appearance:none;
+  }
+  .timer-btn:active { transform:scale(.95); }
+  .timer-btn.start {
+    background:var(--grad); color:#fff;
+    box-shadow:0 4px 20px rgba(168,85,247,.4);
+  }
+  .timer-btn.pause {
+    background:rgba(251,191,36,.15); color:var(--yellow);
+    border:1.5px solid rgba(251,191,36,.3);
+  }
+  .timer-btn.stop {
+    background:rgba(239,68,68,.12); color:#ef4444;
+    border:1.5px solid rgba(239,68,68,.25);
+  }
+  .timer-btn.resume {
+    background:var(--grad); color:#fff;
+    box-shadow:0 4px 20px rgba(168,85,247,.4);
+  }
+
+  /* Subject chips */
+  .subject-chips { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 16px; }
+  .subject-chip {
+    padding:10px 18px; border-radius:12px;
+    background:var(--card); border:1.5px solid var(--card-border);
+    color:var(--text-muted); font-size:14px; font-weight:600;
+    cursor:pointer; transition:all .2s; -webkit-appearance:none;
+  }
+  .subject-chip.active {
+    background:rgba(168,85,247,.15); border-color:var(--purple); color:var(--purple);
+  }
+
+  /* Difficulty */
+  .diff-btns { display:flex; gap:8px; margin:10px 0 16px; }
+  .diff-btn {
+    flex:1; padding:12px 8px; border-radius:12px;
+    background:var(--card); border:1.5px solid var(--card-border);
+    color:var(--text-muted); font-size:13px; font-weight:600;
+    cursor:pointer; text-align:center; transition:all .2s; -webkit-appearance:none;
+  }
+  .diff-btn.active-easy { background:rgba(74,222,128,.12); border-color:var(--green); color:var(--green); }
+  .diff-btn.active-normal { background:rgba(59,130,246,.12); border-color:var(--blue); color:var(--blue); }
+  .diff-btn.active-hard { background:rgba(239,68,68,.12); border-color:#ef4444; color:#ef4444; }
+
+  /* Result section */
+  .result-section {
+    display:none; background:var(--card); border:1px solid var(--card-border);
+    border-radius:var(--radius); padding:20px; margin-top:16px;
+    animation:up .3s ease;
+  }
+  .result-section.active { display:block; }
+  .result-row { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .result-number {
+    width:100px; padding:14px;
+    background:rgba(255,255,255,0.07); border:1.5px solid var(--card-border);
+    border-radius:12px; color:var(--text); font-size:24px; font-weight:800;
+    text-align:center; outline:none; -webkit-appearance:none;
+  }
+  .result-number:focus { border-color:var(--purple); box-shadow:0 0 0 3px rgba(168,85,247,.2); }
+  .result-summary { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .result-stat { background:rgba(255,255,255,0.04); border-radius:12px; padding:14px; text-align:center; }
+  .result-stat-val { font-size:22px; font-weight:800; color:var(--cyan); }
+  .result-stat-label { font-size:11px; color:var(--text-muted); margin-top:4px; }
+
+  /* Session history cards */
+  .session-card {
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:var(--radius); padding:16px; margin-bottom:10px;
+    animation:up .3s ease;
+  }
+  .session-card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .session-book { font-size:15px; font-weight:700; display:flex; align-items:center; gap:8px; }
+  .session-tag { font-size:11px; font-weight:700; padding:3px 9px; border-radius:8px; }
+  .session-card-stats { display:flex; gap:16px; flex-wrap:wrap; }
+  .session-stat { font-size:12px; color:var(--text-muted); }
+  .session-stat strong { color:var(--text); font-weight:700; }
+  .session-date { font-size:11px; color:var(--text-muted); margin-top:8px; }
+  .session-del {
+    background:none; border:none; color:var(--text-muted);
+    font-size:16px; cursor:pointer; padding:4px;
+    opacity:.5; transition:opacity .2s;
+  }
+  .session-del:active { opacity:1; }
+
+  /* Stats */
+  .speed-stat-card {
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:var(--radius); padding:18px; margin-bottom:12px;
+  }
+  .speed-stat-title { font-size:13px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .subject-bar-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .subject-bar-label { width:36px; font-size:12px; font-weight:600; text-align:right; flex-shrink:0; }
+  .subject-bar-track { flex:1; height:22px; background:rgba(255,255,255,0.06); border-radius:11px; overflow:hidden; }
+  .subject-bar-fill {
+    height:100%; border-radius:11px;
+    display:flex; align-items:center; padding:0 10px;
+    font-size:11px; font-weight:700; color:#fff;
+    min-width:fit-content;
+    transition:width .8s cubic-bezier(.4,0,.2,1);
+  }
+  .daily-chart { display:flex; align-items:flex-end; gap:6px; height:120px; padding-top:10px; }
+  .daily-bar-wrap {
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; gap:6px; height:100%; justify-content:flex-end;
+  }
+  .daily-bar { width:100%; border-radius:6px 6px 0 0; min-height:4px; transition:height .6s cubic-bezier(.4,0,.2,1); }
+  .daily-bar-label { font-size:10px; color:var(--text-muted); font-weight:600; }
+  .daily-bar-val { font-size:10px; font-weight:700; color:var(--text); }
+  .speed-summary-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:16px; }
+  .speed-summary-item {
+    background:var(--card); border:1px solid var(--card-border);
+    border-radius:14px; padding:16px 10px; text-align:center;
+  }
+  .speed-summary-val { font-size:22px; font-weight:900; }
+  .speed-summary-label { font-size:11px; color:var(--text-muted); margin-top:4px; }
+
+  /* Filter chips */
+  .filter-chips {
+    display:flex; gap:6px; margin-bottom:14px;
+    overflow-x:auto; padding-bottom:4px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .filter-chip {
+    padding:8px 14px; border-radius:10px;
+    background:var(--card); border:1px solid var(--card-border);
+    color:var(--text-muted); font-size:12px; font-weight:600;
+    cursor:pointer; white-space:nowrap;
+    transition:all .2s; -webkit-appearance:none; flex-shrink:0;
+  }
+  .filter-chip.active {
+    background:rgba(168,85,247,.15); border-color:var(--purple); color:var(--purple);
+  }
 </style>
 </head>
 <body>
@@ -658,6 +865,109 @@
   </div>
 
 </div><!-- /mainPage -->
+
+<!-- ══ 학습 속도 분석 ══ -->
+<div class="page" id="speedPage">
+  <div class="top-bar">
+    <div>
+      <div class="greeting"><span>⏱️ 나의 학습 속도</span></div>
+      <div class="greeting-sub">문제 풀이 속도를 분석해보세요</div>
+    </div>
+  </div>
+
+  <div class="scroll-body">
+    <div class="speed-tabs">
+      <button class="speed-tab active" onclick="switchSpeedTab('measure')">⏱️ 측정</button>
+      <button class="speed-tab" onclick="switchSpeedTab('history')">📋 기록</button>
+      <button class="speed-tab" onclick="switchSpeedTab('stats')">📊 통계</button>
+    </div>
+
+    <!-- 측정하기 -->
+    <div class="speed-content active" id="speedMeasure">
+      <div class="sec">📘 문제집 정보</div>
+      <div class="input-group">
+        <label class="input-label">문제집 이름</label>
+        <input class="input-field" id="bookNameInput" type="text" placeholder="예: 수학의 정석, 영어 기출 등" autocomplete="off">
+      </div>
+      <div class="input-group">
+        <label class="input-label">과목</label>
+        <div class="subject-chips" id="subjectChips">
+          <button class="subject-chip active" data-subject="수학" onclick="selectSubject(this)">📐 수학</button>
+          <button class="subject-chip" data-subject="영어" onclick="selectSubject(this)">📝 영어</button>
+          <button class="subject-chip" data-subject="국어" onclick="selectSubject(this)">📖 국어</button>
+          <button class="subject-chip" data-subject="과학" onclick="selectSubject(this)">🔬 과학</button>
+          <button class="subject-chip" data-subject="사회" onclick="selectSubject(this)">🌍 사회</button>
+          <button class="subject-chip" data-subject="기타" onclick="selectSubject(this)">📚 기타</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">체감 난이도</label>
+        <div class="diff-btns">
+          <button class="diff-btn" data-diff="쉬움" onclick="selectDiff(this)">😊 쉬움</button>
+          <button class="diff-btn active-normal" data-diff="보통" onclick="selectDiff(this)">🙂 보통</button>
+          <button class="diff-btn" data-diff="어려움" onclick="selectDiff(this)">😤 어려움</button>
+        </div>
+      </div>
+
+      <div class="sec">⏱️ 타이머</div>
+      <div class="timer-wrap">
+        <div class="timer-circle" id="timerCircle">
+          <div class="timer-time" id="timerDisplay">00:00</div>
+          <div class="timer-label" id="timerLabel">준비</div>
+        </div>
+        <div class="timer-controls" id="timerControls">
+          <button class="timer-btn start" onclick="startStudyTimer()">▶ 시작</button>
+        </div>
+      </div>
+
+      <div class="result-section" id="resultSection">
+        <div class="sec" style="margin-top:0">✏️ 결과 입력</div>
+        <div class="result-row">
+          <span style="font-size:14px;font-weight:600;">푼 문제 수</span>
+          <input type="number" class="result-number" id="problemCountInput" min="1" placeholder="0" inputmode="numeric" oninput="updateResultPreview()">
+          <span style="font-size:14px;color:var(--text-muted);">문제</span>
+        </div>
+        <div class="result-summary" id="resultPreview" style="display:none;">
+          <div class="result-stat">
+            <div class="result-stat-val" id="previewAvg">-</div>
+            <div class="result-stat-label">문제당 평균</div>
+          </div>
+          <div class="result-stat">
+            <div class="result-stat-val" id="previewPerHour">-</div>
+            <div class="result-stat-label">시간당 문제 수</div>
+          </div>
+        </div>
+        <button class="btn-submit" id="saveSessionBtn" onclick="saveStudySession()" disabled>기록 저장하기 💾</button>
+        <button class="btn-cancel" onclick="resetTimer()">취소</button>
+      </div>
+    </div>
+
+    <!-- 기록 -->
+    <div class="speed-content" id="speedHistory">
+      <div class="filter-chips" id="historyFilters"></div>
+      <div id="sessionList">
+        <div class="empty"><span class="empty-icon">📝</span>아직 기록이 없어요. 첫 측정을 시작해보세요!</div>
+      </div>
+    </div>
+
+    <!-- 통계 -->
+    <div class="speed-content" id="speedStats">
+      <div id="statsContent">
+        <div class="empty"><span class="empty-icon">📊</span>기록이 쌓이면 통계가 표시돼요!</div>
+      </div>
+    </div>
+  </div>
+</div><!-- /speedPage -->
+
+<!-- ══ 하단 탭 바 ══ -->
+<div class="tab-bar" id="tabBar">
+  <button class="tab-item active" id="tabHome" onclick="switchTab('home')">
+    <span class="tab-icon">🏠</span><span>홈</span>
+  </button>
+  <button class="tab-item" id="tabSpeed" onclick="switchTab('speed')">
+    <span class="tab-icon">⏱️</span><span>학습 속도</span>
+  </button>
+</div>
 
 <!-- ══ 업로드 모달 ══ -->
 <div class="overlay" id="uploadOverlay">
@@ -859,6 +1169,11 @@ async function demoLogin(){
 function logout(){
   S.user=null;
   save();
+  currentTab='home';
+  document.getElementById('tabBar').classList.remove('visible');
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tabHome').classList.add('active');
+  document.querySelector('.fab-wrap').style.display='';
   toggleTeacherMode(false);
   const cBody = document.getElementById('cumulativeBody');
   if(cBody) cBody.classList.remove('open');
@@ -868,11 +1183,18 @@ function logout(){
   if(tBody) tBody.classList.remove('open');
   const tChev = document.getElementById('teamChevron');
   if(tChev) tChev.classList.remove('open');
+  resetTimer();
   showPage('loginPage');
 }
 
 // ══ 메인 ══
-function enterMain(){ showPage('mainPage'); render(); reqNotif(); startSched(); }
+function enterMain(){
+  currentTab='home';
+  showPage('mainPage');
+  document.getElementById('tabBar').classList.add('visible');
+  document.querySelector('.fab-wrap').style.display='';
+  render(); reqNotif(); startSched();
+}
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -1403,6 +1725,321 @@ function startFirestoreSync() {
     }
     render();
   });
+
+  // 4. Sync studySessions
+  window.fsOnSnapshot(window.fsCollection(window.db, 'studySessions'), (snapshot) => {
+    const sessions = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      if (!data.deleted) sessions.push(data);
+    });
+    studySessions = sessions;
+    if (currentTab === 'speed') {
+      renderSpeedHistory();
+      renderSpeedStats();
+    }
+  });
+}
+
+// ══ TAB BAR ══
+let currentTab = 'home';
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.getElementById(tab === 'home' ? 'tabHome' : 'tabSpeed').classList.add('active');
+  if (tab === 'home') {
+    showPage('mainPage');
+    document.querySelector('.fab-wrap').style.display = '';
+  } else {
+    showPage('speedPage');
+    document.querySelector('.fab-wrap').style.display = 'none';
+    renderSpeedHistory();
+    renderSpeedStats();
+  }
+}
+
+// ══ SPEED TABS ══
+function switchSpeedTab(tab) {
+  document.querySelectorAll('.speed-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.speed-content').forEach(c => c.classList.remove('active'));
+  const tabIdx = { measure:0, history:1, stats:2 };
+  const contentId = { measure:'speedMeasure', history:'speedHistory', stats:'speedStats' };
+  document.querySelectorAll('.speed-tab')[tabIdx[tab]].classList.add('active');
+  document.getElementById(contentId[tab]).classList.add('active');
+  if (tab === 'history') renderSpeedHistory();
+  if (tab === 'stats') renderSpeedStats();
+}
+
+// ══ SUBJECT & DIFFICULTY ══
+let selectedSubject = '수학';
+let selectedDiff = '보통';
+
+function selectSubject(el) {
+  document.querySelectorAll('.subject-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedSubject = el.dataset.subject;
+}
+function selectDiff(el) {
+  document.querySelectorAll('.diff-btn').forEach(b => {
+    b.classList.remove('active-easy','active-normal','active-hard');
+  });
+  selectedDiff = el.dataset.diff;
+  const cls = selectedDiff==='쉬움' ? 'active-easy' : selectedDiff==='어려움' ? 'active-hard' : 'active-normal';
+  el.classList.add(cls);
+}
+
+// ══ TIMER ══
+let timerState = 'idle';
+let timerInterval = null;
+let timerSeconds = 0;
+
+function formatTimerVal(sec) {
+  const h = Math.floor(sec/3600);
+  const m = Math.floor((sec%3600)/60);
+  const s = sec%60;
+  return h > 0 ? `${h}:${p(m)}:${p(s)}` : `${p(m)}:${p(s)}`;
+}
+
+function startStudyTimer() {
+  const bookName = document.getElementById('bookNameInput').value.trim();
+  if (!bookName) { toast('문제집 이름을 입력해주세요 📘','⚠️'); document.getElementById('bookNameInput').focus(); return; }
+  timerState = 'running';
+  timerSeconds = 0;
+  document.getElementById('timerCircle').className = 'timer-circle running';
+  document.getElementById('timerLabel').textContent = '측정 중...';
+  timerInterval = setInterval(() => { timerSeconds++; document.getElementById('timerDisplay').textContent = formatTimerVal(timerSeconds); }, 1000);
+  document.getElementById('bookNameInput').disabled = true;
+  document.querySelectorAll('.subject-chip').forEach(c => c.style.pointerEvents='none');
+  document.querySelectorAll('.diff-btn').forEach(b => b.style.pointerEvents='none');
+  document.getElementById('timerControls').innerHTML = `
+    <button class="timer-btn pause" onclick="pauseTimer()">⏸ 일시정지</button>
+    <button class="timer-btn stop" onclick="stopTimer()">⏹ 완료</button>`;
+}
+
+function pauseTimer() {
+  if (timerState !== 'running') return;
+  timerState = 'paused';
+  clearInterval(timerInterval);
+  document.getElementById('timerCircle').className = 'timer-circle paused';
+  document.getElementById('timerLabel').textContent = '일시정지';
+  document.getElementById('timerControls').innerHTML = `
+    <button class="timer-btn resume" onclick="resumeTimer()">▶ 계속</button>
+    <button class="timer-btn stop" onclick="stopTimer()">⏹ 완료</button>`;
+}
+
+function resumeTimer() {
+  if (timerState !== 'paused') return;
+  timerState = 'running';
+  document.getElementById('timerCircle').className = 'timer-circle running';
+  document.getElementById('timerLabel').textContent = '측정 중...';
+  timerInterval = setInterval(() => { timerSeconds++; document.getElementById('timerDisplay').textContent = formatTimerVal(timerSeconds); }, 1000);
+  document.getElementById('timerControls').innerHTML = `
+    <button class="timer-btn pause" onclick="pauseTimer()">⏸ 일시정지</button>
+    <button class="timer-btn stop" onclick="stopTimer()">⏹ 완료</button>`;
+}
+
+function stopTimer() {
+  if (timerState !== 'running' && timerState !== 'paused') return;
+  timerState = 'done';
+  clearInterval(timerInterval);
+  document.getElementById('timerCircle').className = 'timer-circle';
+  document.getElementById('timerLabel').textContent = `총 ${formatTimerVal(timerSeconds)}`;
+  document.getElementById('timerControls').innerHTML = '';
+  document.getElementById('resultSection').classList.add('active');
+  document.getElementById('problemCountInput').value = '';
+  document.getElementById('resultPreview').style.display = 'none';
+  document.getElementById('saveSessionBtn').disabled = true;
+  setTimeout(() => document.getElementById('problemCountInput').focus(), 300);
+}
+
+function updateResultPreview() {
+  const count = parseInt(document.getElementById('problemCountInput').value);
+  const preview = document.getElementById('resultPreview');
+  const saveBtn = document.getElementById('saveSessionBtn');
+  if (!count || count <= 0 || timerSeconds <= 0) { preview.style.display='none'; saveBtn.disabled=true; return; }
+  preview.style.display = 'grid';
+  saveBtn.disabled = false;
+  const avgSec = timerSeconds / count;
+  const perHour = Math.round((count / timerSeconds) * 3600 * 10) / 10;
+  const avgMin = Math.floor(avgSec / 60);
+  const avgS = Math.round(avgSec % 60);
+  document.getElementById('previewAvg').textContent = avgMin > 0 ? `${avgMin}분 ${avgS}초` : `${avgS}초`;
+  document.getElementById('previewPerHour').textContent = `${perHour}문제`;
+}
+
+function resetTimer() {
+  timerState = 'idle';
+  clearInterval(timerInterval);
+  timerSeconds = 0;
+  document.getElementById('timerDisplay').textContent = '00:00';
+  document.getElementById('timerLabel').textContent = '준비';
+  document.getElementById('timerCircle').className = 'timer-circle';
+  document.getElementById('resultSection').classList.remove('active');
+  document.getElementById('bookNameInput').disabled = false;
+  document.querySelectorAll('.subject-chip').forEach(c => c.style.pointerEvents='');
+  document.querySelectorAll('.diff-btn').forEach(b => b.style.pointerEvents='');
+  document.getElementById('timerControls').innerHTML = `<button class="timer-btn start" onclick="startStudyTimer()">▶ 시작</button>`;
+}
+
+// ══ SAVE SESSION ══
+let studySessions = [];
+
+async function saveStudySession() {
+  const u = S.user; if (!u) return;
+  const bookName = document.getElementById('bookNameInput').value.trim();
+  const count = parseInt(document.getElementById('problemCountInput').value);
+  if (!bookName || !count || count <= 0 || timerSeconds <= 0) { toast('정보를 모두 입력해주세요','⚠️'); return; }
+  const saveBtn = document.getElementById('saveSessionBtn');
+  saveBtn.disabled = true; saveBtn.textContent = '저장 중... ⏳';
+  const ts = Date.now();
+  const session = {
+    id: ts, uid: u.id, bookName, subject: selectedSubject, difficulty: selectedDiff,
+    problemCount: count, durationSec: timerSeconds,
+    avgSecPerProblem: Math.round((timerSeconds / count) * 10) / 10,
+    date: todayKey(), ts
+  };
+  try {
+    await window.fsSetDoc(window.fsDoc(window.db, 'studySessions', `${u.id}_${ts}`), session);
+    toast('학습 기록이 저장되었습니다! 📊','✨');
+    resetTimer();
+    document.getElementById('bookNameInput').value = '';
+    switchSpeedTab('history');
+  } catch (err) {
+    console.error('세션 저장 오류:', err);
+    toast('저장 중 오류가 발생했습니다.','⚠️');
+  } finally {
+    saveBtn.disabled = false; saveBtn.textContent = '기록 저장하기 💾';
+  }
+}
+
+// ══ HISTORY ══
+let historyFilter = '전체';
+const SUBJ_COLORS = {'수학':'#a855f7','영어':'#3b82f6','국어':'#ec4899','과학':'#22d3ee','사회':'#f59e0b','기타':'#94a3b8'};
+const SUBJ_EMOJI = {'수학':'📐','영어':'📝','국어':'📖','과학':'🔬','사회':'🌍','기타':'📚'};
+
+function setHistoryFilter(f) { historyFilter = f; renderSpeedHistory(); }
+
+function renderSpeedHistory() {
+  const subjects = ['전체','수학','영어','국어','과학','사회','기타'];
+  document.getElementById('historyFilters').innerHTML = subjects.map(s =>
+    `<button class="filter-chip ${s===historyFilter?'active':''}" onclick="setHistoryFilter('${s}')">${s}</button>`
+  ).join('');
+  const u = S.user; if (!u) return;
+  let sessions = studySessions.filter(s => String(s.uid)===String(u.id)).sort((a,b) => b.ts-a.ts);
+  if (historyFilter !== '전체') sessions = sessions.filter(s => s.subject===historyFilter);
+  const list = document.getElementById('sessionList');
+  if (!sessions.length) {
+    list.innerHTML = `<div class="empty"><span class="empty-icon">📝</span>${historyFilter!=='전체' ? historyFilter+' 기록이 없어요' : '아직 기록이 없어요. 첫 측정을 시작해보세요!'}</div>`;
+    return;
+  }
+  list.innerHTML = sessions.map(s => {
+    const color = SUBJ_COLORS[s.subject]||'#94a3b8';
+    const emoji = SUBJ_EMOJI[s.subject]||'📚';
+    const avgSec = s.avgSecPerProblem || (s.durationSec/s.problemCount);
+    const avgMin = Math.floor(avgSec/60), avgS = Math.round(avgSec%60);
+    const avgStr = avgMin > 0 ? `${avgMin}분 ${avgS}초` : `${avgS}초`;
+    const durMin = Math.floor(s.durationSec/60), durS = s.durationSec%60;
+    const durStr = durMin > 0 ? `${durMin}분 ${durS}초` : `${durS}초`;
+    const diffEmoji = s.difficulty==='쉬움'?'😊':s.difficulty==='어려움'?'😤':'🙂';
+    return `<div class="session-card">
+      <div class="session-card-head">
+        <div class="session-book">${emoji} ${s.bookName}
+          <span class="session-tag" style="background:${color}22;color:${color};">${s.subject}</span>
+        </div>
+        <button class="session-del" onclick="deleteStudySession('${s.uid}_${s.ts}')">🗑️</button>
+      </div>
+      <div class="session-card-stats">
+        <div class="session-stat">📝 <strong>${s.problemCount}문제</strong></div>
+        <div class="session-stat">⏱️ <strong>${durStr}</strong></div>
+        <div class="session-stat">⚡ <strong>${avgStr}/문제</strong></div>
+        <div class="session-stat">${diffEmoji} ${s.difficulty}</div>
+      </div>
+      <div class="session-date">${s.date}</div>
+    </div>`;
+  }).join('');
+}
+
+async function deleteStudySession(docId) {
+  if (!confirm('이 기록을 삭제하시겠습니까?')) return;
+  try {
+    await window.fsSetDoc(window.fsDoc(window.db, 'studySessions', docId), { deleted: true });
+    toast('기록이 삭제되었습니다','🗑️');
+  } catch (err) { toast('삭제 중 오류가 발생했습니다.','⚠️'); }
+}
+
+// ══ STATS ══
+function renderSpeedStats() {
+  const u = S.user; if (!u) return;
+  const mySessions = studySessions.filter(s => String(s.uid)===String(u.id));
+  const content = document.getElementById('statsContent');
+  if (!mySessions.length) {
+    content.innerHTML = `<div class="empty"><span class="empty-icon">📊</span>기록이 쌓이면 통계가 표시돼요!</div>`;
+    return;
+  }
+  const totalSessions = mySessions.length;
+  const totalProblems = mySessions.reduce((s,x) => s+x.problemCount,0);
+  const totalSeconds = mySessions.reduce((s,x) => s+x.durationSec,0);
+  const totalHours = Math.floor(totalSeconds/3600);
+  const totalMins = Math.round((totalSeconds%3600)/60);
+  const totalTimeStr = totalHours > 0 ? `${totalHours}h ${totalMins}m` : `${totalMins}분`;
+  const subjects = {};
+  mySessions.forEach(s => {
+    if (!subjects[s.subject]) subjects[s.subject] = {total:0, count:0, totalSec:0};
+    subjects[s.subject].total += s.problemCount;
+    subjects[s.subject].count++;
+    subjects[s.subject].totalSec += s.durationSec;
+  });
+  const subjectAvgs = Object.entries(subjects).map(([name,data]) => {
+    const avg = data.totalSec / data.total;
+    return {name, avg, total:data.total, count:data.count, color:SUBJ_COLORS[name]||'#94a3b8'};
+  }).sort((a,b) => a.avg-b.avg);
+  const maxAvg = Math.max(...subjectAvgs.map(s => s.avg));
+  const days7 = last7();
+  const dailyData = days7.map(d => {
+    const daySessions = mySessions.filter(s => s.date===d);
+    return {day:d, label:d.slice(5).replace('-','/'), count:daySessions.reduce((s,x)=>s+x.problemCount,0)};
+  });
+  const maxDaily = Math.max(...dailyData.map(d => d.count),1);
+  let html = '';
+  // Summary
+  html += `<div class="speed-summary-row">
+    <div class="speed-summary-item"><div class="speed-summary-val" style="color:var(--purple)">${totalSessions}</div><div class="speed-summary-label">총 세션</div></div>
+    <div class="speed-summary-item"><div class="speed-summary-val" style="color:var(--cyan)">${totalProblems}</div><div class="speed-summary-label">총 문제 수</div></div>
+    <div class="speed-summary-item"><div class="speed-summary-val" style="color:var(--green)">${totalTimeStr}</div><div class="speed-summary-label">총 학습 시간</div></div>
+  </div>`;
+  // Subject bars
+  html += `<div class="speed-stat-card"><div class="speed-stat-title">📐 과목별 평균 속도 (문제당)</div>`;
+  subjectAvgs.forEach(s => {
+    const aMin = Math.floor(s.avg/60), aS = Math.round(s.avg%60);
+    const aStr = aMin > 0 ? `${aMin}분 ${aS}초` : `${aS}초`;
+    const w = Math.max((s.avg/maxAvg)*100,15);
+    html += `<div class="subject-bar-row"><div class="subject-bar-label">${s.name}</div><div class="subject-bar-track"><div class="subject-bar-fill" style="width:${w}%;background:${s.color}">${aStr}</div></div></div>`;
+  });
+  html += `</div>`;
+  // Daily chart
+  html += `<div class="speed-stat-card"><div class="speed-stat-title">📅 최근 7일 학습량</div><div class="daily-chart">`;
+  dailyData.forEach(d => {
+    const h = d.count > 0 ? Math.max((d.count/maxDaily)*100,8) : 4;
+    const bg = d.count > 0 ? 'var(--grad)' : 'rgba(255,255,255,0.08)';
+    html += `<div class="daily-bar-wrap"><div class="daily-bar-val">${d.count||''}</div><div class="daily-bar" style="height:${h}%;background:${bg}"></div><div class="daily-bar-label">${d.label}</div></div>`;
+  });
+  html += `</div></div>`;
+  // Best/worst
+  if (subjectAvgs.length > 1) {
+    const fastest = subjectAvgs[0], slowest = subjectAvgs[subjectAvgs.length-1];
+    html += `<div class="speed-stat-card"><div class="speed-stat-title">🏆 과목 비교</div>
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1;background:rgba(74,222,128,.08);border-radius:12px;padding:14px;text-align:center;">
+          <div style="font-size:11px;color:var(--text-muted);">가장 빠른 과목</div>
+          <div style="font-size:20px;font-weight:800;color:var(--green);margin-top:4px;">⚡ ${fastest.name}</div>
+        </div>
+        <div style="flex:1;background:rgba(239,68,68,.08);border-radius:12px;padding:14px;text-align:center;">
+          <div style="font-size:11px;color:var(--text-muted);">가장 느린 과목</div>
+          <div style="font-size:20px;font-weight:800;color:#ef4444;margin-top:4px;">🐢 ${slowest.name}</div>
+        </div>
+      </div></div>`;
+  }
+  content.innerHTML = html;
 }
 
 // ══ INIT ══
