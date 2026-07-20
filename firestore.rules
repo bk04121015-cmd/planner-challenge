@@ -1,0 +1,10 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 앱에서 사용하는 컬렉션들에 대한 읽기/쓰기 권한 허용
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

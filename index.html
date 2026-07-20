@@ -11,6 +11,7 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
   import { getFirestore, collection, doc, setDoc, deleteDoc, addDoc, getDocs, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
   import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
@@ -24,8 +25,17 @@
   };
 
   const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  signInAnonymously(auth).then(() => {
+    console.log('Firebase 익명 로그인 성공 🔑');
+  }).catch(err => {
+    console.warn('Firebase 익명 로그인 오류 (Console에서 Anonymous Auth 활성화 필요할 수 있음):', err);
+  });
+
   window.db = getFirestore(app);
   window.storage = getStorage(app);
+  window.auth = auth;
   window.fsCollection = collection;
   window.fsDoc = doc;
   window.fsSetDoc = setDoc;
