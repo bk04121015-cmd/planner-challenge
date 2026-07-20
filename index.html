@@ -13,7 +13,7 @@
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
   import { getFirestore, collection, doc, setDoc, deleteDoc, addDoc, getDocs, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-  import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+  import { getStorage, ref, uploadString, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyBesowYLPFM3pCK--rPs4nbDphroPKiNoc",
@@ -47,6 +47,7 @@
   window.fsOnSnapshot = onSnapshot;
   window.stRef = ref;
   window.stUploadString = uploadString;
+  window.stUploadBytes = uploadBytes;
   window.stGetDownloadURL = getDownloadURL;
   window.firebaseReady = true;
   console.log('Firebase 연결 완료 ✅');
@@ -1562,17 +1563,21 @@ async function submitCertify(){
 
   try {
     if(selFile){
-      // 1. Upload to Storage
+      // 1. Upload to Storage (Direct File Blob Upload)
       const storageRef = window.stRef(window.storage, `certs/${certId}.jpg`);
       
-      const base64Data = await new Promise((resolve, reject) => {
-        const r = new FileReader();
-        r.onload = ev => resolve(ev.target.result);
-        r.onerror = err => reject(err);
-        r.readAsDataURL(selFile);
-      });
+      if (window.stUploadBytes) {
+        await window.stUploadBytes(storageRef, selFile);
+      } else {
+        const base64Data = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = ev => resolve(ev.target.result);
+          r.onerror = err => reject(err);
+          r.readAsDataURL(selFile);
+        });
+        await window.stUploadString(storageRef, base64Data, 'data_url');
+      }
 
-      await window.stUploadString(storageRef, base64Data, 'data_url');
       const downloadUrl = await window.stGetDownloadURL(storageRef);
       cert.photo = downloadUrl;
     }
@@ -1583,8 +1588,9 @@ async function submitCertify(){
     closeOverlay('uploadOverlay');
     setTimeout(()=>{render();showPraise();},300);
   } catch (e) {
-    toast('인증 제출 중 오류가 발생했습니다.', '⚠️');
-    console.error(e);
+    console.error('인증 제출 실패 상세:', e);
+    const errCode = e && e.code ? ` (${e.code})` : (e && e.message ? ` (${e.message})` : '');
+    toast(`인증 제출 중 오류가 발생했습니다.${errCode}`, '⚠️');
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = '인증 완료! ✨';
